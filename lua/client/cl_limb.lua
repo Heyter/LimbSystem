@@ -159,12 +159,6 @@ local PANEL = {}
 	local body  = "eft/body.png"
 
 	function PANEL:Init()
-		if (IsValid(Limb.gui)) then
-			Limb.gui:Remove()
-		end
-		
-		Limb.gui = self
-		
 		self:SetSize(505, 699)
 		self:Center()
 		self:MakePopup()
@@ -226,10 +220,6 @@ local PANEL = {}
 			self:DrawDamagedLimb(k)
 			self:DrawDamagePanel(k, inst[k][1], inst[k][2])
 		end
-	end
-	
-	function PANEL:OnRemove()
-		LocalPlayer().limbTickBool = nil
 	end
 
 	function PANEL:Think()
@@ -301,8 +291,7 @@ local PANEL = {}
 vgui.Register("Limb.Panel", PANEL, "DFrame")
 
 concommand.Add("limb", function()
-	vgui.Create("Limb.Panel")
-	LocalPlayer().limbTickBool = true
+	Limb.gui = vgui.Create("Limb.Panel")
 end)
 
 concommand.Add("limb_remove", function()
@@ -460,14 +449,15 @@ end)
 -- # Micro-ops
 local UIVis, ConsoleVis, getFocus, keyDown = gui.IsGameUIVisible, gui.IsConsoleVisible, vgui.GetKeyboardFocus, input.IsKeyDown
 local function isValidPanel(player)
-	if (player:IsTyping() or player:getNetVar("typing") or ConsoleVis() or UIVis() or IsValid(fpnl) and fpnl:GetClassName():find("TextEntry", nil, true)) then
+	if (player:IsTyping() or player:getNetVar("typing") or ConsoleVis() or UIVis() or IsValid(getFocus()) and getFocus():GetClassName():find("TextEntry", nil, true)) then
 		return false
 	end
 	
 	return true
 end
 
-hook.Add("Tick", "Limb.Tick", function()
+local key_isDown = false
+hook.Add("Think", "Limb.Think", function()
 	local player = LocalPlayer()
 	if (!IsValid(player) or !player:Alive()) then
 		return
@@ -477,13 +467,16 @@ hook.Add("Tick", "Limb.Tick", function()
 		RunConsoleCommand("limb_remove")
 	end
 	
-	if (keyDown(bindkey_key:GetInt()) and isValidPanel(player) and (player.limbTick or 0) < CurTime()) then
-		if (player.limbTickBool) then
-			player.limbTickBool = nil
-			RunConsoleCommand("limb_remove")
+	local key = keyDown(bindkey_key:GetInt())
+	
+	if key and !key_isDown and isValidPanel(player) then
+		if IsValid(Limb.gui) then
+			Limb.gui:Remove()
 		else
-			RunConsoleCommand("limb")
+			Limb.gui = vgui.Create("Limb.Panel")
 		end
-		player.limbTick = CurTime() + .45
+		key_isDown = true
+	elseif !key and key_isDown then
+		key_isDown = false
 	end
 end)

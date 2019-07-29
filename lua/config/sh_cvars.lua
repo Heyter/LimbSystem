@@ -1,4 +1,4 @@
-Limb:AddCvar("debug", true) -- # Only if your needing debug
+Limb:AddCvar("debug", false) -- # Only if your needing debug
 Limb:AddCvar("system", true) -- # Enable or disable limb system [true/[false or nil]]
 
 Limb:AddCvar("disability", true) -- # Limb disability

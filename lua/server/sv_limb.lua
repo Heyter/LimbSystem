@@ -15,49 +15,40 @@ local Limb, CurTime, IsValid, math, MOVETYPE_NOCLIP, MOVETYPE_LADDER, hook = Lim
 function Limb:TakeDamage(player, hitGroup, dmgInfo)
 	local damage, dmgType = dmgInfo:GetDamage(), dmgInfo:GetDamageType()
 	if (hitGroup > 0 and damage > 0) then -- # HITGROUP_GENERIC = 0
-		local limbData = player:getNetVar("LimbData", {})
-		
-		if (limbData) then
-		
-			if (Limb:GetCvar("armor_damage")) then
-				local armor = player:Armor() - damage
-				if (armor < 0) then
-					damage = damage * Limb:GetCvar("armor_inc_damage")
-				else
-					damage = damage / Limb:GetCvar("armor_dec_damage")
-				end
-				armor = nil
+		if (Limb:GetCvar("armor_damage")) then
+			if (player:Armor() - damage < 0) then
+				damage = damage * Limb:GetCvar("armor_inc_damage")
+			else
+				damage = damage / Limb:GetCvar("armor_dec_damage")
 			end
-			
-			self:AddHealth(player, hitGroup, damage)
-			local newVal = self:GetHealth(player, hitGroup)
-			
-			if (dmgType) then
-				local maxHealth = self:GetDataHigtroup()[hitGroup][1]
-				if (self.tbl_DmgStartsBleeding[dmgType]) then
-					local bleed = self:Data()[hitGroup][4] -- # Bleeding threshold
-					if (bleed > 0 and damage >= bleed or newVal >= maxHealth) then -- # bleeding
-						self:SetBleeding(player, hitGroup, true)
-					end
-					bleed = nil
-				end
-				
-				if (self.tbl_DmgBreakBones[dmgType]) then
-					local broken = self:Data()[hitGroup][3] -- # Bone break threshold
-					if (broken > 0 and damage >= broken or newVal >= maxHealth) then -- # break bones
-						self:SetBroken(player, hitGroup, true)
-					end
-					broken = nil
-				end
-				
-				maxHealth = nil
-			end
-			
-			hook.Run("LimbTakeDamage", player, hitGroup, damage, newVal, dmgInfo) -- # Called when a player takes damage limb.
-			newVal = nil
 		end
 		
-		limbData = nil
+		self:AddHealth(player, hitGroup, damage)
+		local newVal = self:GetHealth(player, hitGroup)
+		
+		if (dmgType) then
+			local maxHealth = self:GetDataHigtroup()[hitGroup][1]
+			if (self.tbl_DmgStartsBleeding[dmgType]) then
+				local bleed = self:Data()[hitGroup][4] -- # Bleeding threshold
+				if (bleed > 0 and damage >= bleed or newVal >= maxHealth) then -- # bleeding
+					self:SetBleeding(player, hitGroup, true)
+				end
+				bleed = nil
+			end
+			
+			if (self.tbl_DmgBreakBones[dmgType]) then
+				local broken = self:Data()[hitGroup][3] -- # Bone break threshold
+				if (broken > 0 and damage >= broken or newVal >= maxHealth) then -- # break bones
+					self:SetBroken(player, hitGroup, true)
+				end
+				broken = nil
+			end
+			
+			maxHealth = nil
+		end
+		
+		hook.Run("LimbTakeDamage", player, hitGroup, damage, newVal, dmgInfo) -- # Called when a player takes damage limb.
+		newVal = nil
 	end
 	
 	damage, dmgType = nil, nil -- # Memory.
