@@ -9,3 +9,7 @@
 -- # In short, this is a system of limb damage.
 
 Install/Установить: https://github.com/Heyter/netlibrary
+
+https://i.imgur.com/S5tIYnn.jpg
+https://i.imgur.com/2e3OnBj.jpg
+https://i.imgur.com/H1rBub7.jpg
