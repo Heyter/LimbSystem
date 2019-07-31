@@ -19,6 +19,13 @@ local IN_RELOAD, string, timer = IN_RELOAD, string, timer
 Limb.anim = Limb.anim or {}
 Limb.anim.citizen_male = {
 	normal = {
+		[ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE},
+		[ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_COVER_LOW},
+		[ACT_MP_WALK] = {ACT_WALK, ACT_WALK},
+		[ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
+		[ACT_MP_RUN] = {ACT_RUN, ACT_RUN}
+	},
+	fist = {
 		[ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_ANGRY_SMG1},
 		[ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_COVER_LOW},
 		[ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE_STIMULATED},
@@ -78,6 +85,13 @@ Limb.anim.citizen_male = {
 
 Limb.anim.citizen_female = {
 	normal = {
+		[ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE},
+		[ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_COVER_LOW},
+		[ACT_MP_WALK] = {ACT_WALK, ACT_WALK},
+		[ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
+		[ACT_MP_RUN] = {ACT_RUN, ACT_RUN}
+	},
+	fist = {
 		[ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_MANNEDGUN},
 		[ACT_MP_CROUCH_IDLE] = {ACT_COVER_LOW, ACT_COVER_LOW},
 		[ACT_MP_WALK] = {ACT_WALK, ACT_RANGE_AIM_SMG1_LOW},
@@ -127,9 +141,17 @@ Limb.anim.citizen_female = {
 		attack = ACT_MELEE_ATTACK_SWING
 	},
 	glide = ACT_GLIDE,
+	vehicle = Limb.anim.citizen_male.vehicle
 }
 Limb.anim.metrocop = {
 	normal = {
+		[ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE},
+		[ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_PISTOL_LOW},
+		[ACT_MP_WALK] = {ACT_WALK, ACT_WALK},
+		[ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH, ACT_WALK_CROUCH},
+		[ACT_MP_RUN] = {ACT_RUN, ACT_RUN}
+	},
+	fist = {
 		[ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE_ANGRY_SMG1},
 		[ACT_MP_CROUCH_IDLE] = {ACT_COVER_PISTOL_LOW, ACT_COVER_SMG1_LOW},
 		[ACT_MP_WALK] = {ACT_WALK, ACT_WALK_AIM_RIFLE},
@@ -185,6 +207,13 @@ Limb.anim.metrocop = {
 }
 Limb.anim.overwatch = {
 	normal = {
+		[ACT_MP_STAND_IDLE] = {"idle_unarmed", "idle_unarmed"},
+		[ACT_MP_CROUCH_IDLE] = {ACT_CROUCHIDLE, ACT_CROUCHIDLE},
+		[ACT_MP_WALK] = {"walkunarmed_all", "walkunarmed_all"},
+		[ACT_MP_CROUCHWALK] = {ACT_WALK_CROUCH_RIFLE, ACT_WALK_CROUCH_RIFLE},
+		[ACT_MP_RUN] = {ACT_RUN_AIM_RIFLE, ACT_RUN_AIM_RIFLE}
+	},
+	fist = {
 		[ACT_MP_STAND_IDLE] = {"idle_unarmed", ACT_IDLE_ANGRY},
 		[ACT_MP_CROUCH_IDLE] = {ACT_CROUCHIDLE, ACT_CROUCHIDLE},
 		[ACT_MP_WALK] = {"walkunarmed_all", ACT_WALK_RIFLE},
@@ -231,6 +260,13 @@ Limb.anim.overwatch = {
 }
 Limb.anim.vort = {
 	normal = {
+		[ACT_MP_STAND_IDLE] = {ACT_IDLE, ACT_IDLE},
+		[ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
+		[ACT_MP_WALK] = {ACT_WALK, ACT_WALK},
+		[ACT_MP_CROUCHWALK] = {ACT_WALK, ACT_WALK},
+		[ACT_MP_RUN] = {ACT_RUN, ACT_RUN}
+	},
+	fist = {
 		[ACT_MP_STAND_IDLE] = {ACT_IDLE, "actionidle"},
 		[ACT_MP_CROUCH_IDLE] = {"crouchidle", "crouchidle"},
 		[ACT_MP_WALK] = {ACT_WALK, "walk_all_holdgun"},
@@ -303,7 +339,45 @@ Limb.anim.fastZombie = {
 	[ACT_MP_RUN] = ACT_HL2MP_RUN_ZOMBIE_FAST
 }
 
-local KEY_BLACKLIST = IN_ATTACK + IN_ATTACK2
+local translations = {}
+local function setModelClass(model, class)
+	if (!Limb.anim[class]) then
+		error("'"..tostring(class).."' is not a valid animation class!")
+	end
+
+	translations[model:lower()] = class
+end
+
+local function getModelClass(model)
+	model = string.lower(model)
+	local class = translations[model]
+	if (class) then return class end
+
+	if (model:find("/player")) then
+		class = "player"
+	elseif (string.find(model, "female")) then
+		class = "citizen_female"
+	else
+		class = "citizen_male"
+	end
+
+	setModelClass(model, class)
+	return class
+end
+
+setModelClass("models/police.mdl", "metrocop")
+setModelClass("models/combine_super_soldier.mdl", "overwatch")
+setModelClass("models/combine_soldier_prisonGuard.mdl", "overwatch")
+setModelClass("models/combine_soldier.mdl", "overwatch")
+setModelClass("models/vortigaunt.mdl", "vort")
+setModelClass("models/vortigaunt_blue.mdl", "vort")
+setModelClass("models/vortigaunt_doctor.mdl", "vort")
+setModelClass("models/vortigaunt_slave.mdl", "vort")
+setModelClass("models/vortigaunt_slave.mdl", "vort")
+setModelClass("models/alyx.mdl", "citizen_female")
+setModelClass("models/mossman.mdl", "citizen_female")
+
+local KEY_BLACKLIST = bit.bor(IN_ATTACK, IN_ATTACK2)
 hook.Add("StartCommand", "Limb.StartCommand", function(player, command)
 	local weapon = player:GetActiveWeapon()
 
@@ -316,8 +390,6 @@ hook.Add("StartCommand", "Limb.StartCommand", function(player, command)
 	end
 end)
 
-local ALWAYS_RAISED = Limb.ALWAYS_RAISED
-
 local HOLDTYPE_TRANSLATOR = {}
 HOLDTYPE_TRANSLATOR[""] = "normal"
 HOLDTYPE_TRANSLATOR["physgun"] = "smg"
@@ -326,9 +398,8 @@ HOLDTYPE_TRANSLATOR["crossbow"] = "shotgun"
 HOLDTYPE_TRANSLATOR["rpg"] = "shotgun"
 HOLDTYPE_TRANSLATOR["slam"] = "normal"
 HOLDTYPE_TRANSLATOR["grenade"] = "grenade"
-HOLDTYPE_TRANSLATOR["fist"] = "normal"
 HOLDTYPE_TRANSLATOR["melee2"] = "melee"
-HOLDTYPE_TRANSLATOR["passive"] = "normal"
+HOLDTYPE_TRANSLATOR["passive"] = "smg"
 HOLDTYPE_TRANSLATOR["knife"] = "melee"
 HOLDTYPE_TRANSLATOR["duel"] = "pistol"
 HOLDTYPE_TRANSLATOR["camera"] = "smg"
@@ -337,13 +408,14 @@ HOLDTYPE_TRANSLATOR["revolver"] = "pistol"
 
 local PLAYER_HOLDTYPE_TRANSLATOR = {}
 PLAYER_HOLDTYPE_TRANSLATOR[""] = "normal"
+PLAYER_HOLDTYPE_TRANSLATOR["normal"] = "normal"
+PLAYER_HOLDTYPE_TRANSLATOR["revolver"] = "normal"
 PLAYER_HOLDTYPE_TRANSLATOR["fist"] = "normal"
 PLAYER_HOLDTYPE_TRANSLATOR["pistol"] = "normal"
 PLAYER_HOLDTYPE_TRANSLATOR["grenade"] = "normal"
 PLAYER_HOLDTYPE_TRANSLATOR["melee"] = "normal"
 PLAYER_HOLDTYPE_TRANSLATOR["slam"] = "normal"
 PLAYER_HOLDTYPE_TRANSLATOR["melee2"] = "normal"
-PLAYER_HOLDTYPE_TRANSLATOR["passive"] = "normal"
 PLAYER_HOLDTYPE_TRANSLATOR["knife"] = "normal"
 PLAYER_HOLDTYPE_TRANSLATOR["duel"] = "normal"
 PLAYER_HOLDTYPE_TRANSLATOR["bugbait"] = "normal"
@@ -356,7 +428,7 @@ function playerMeta:isWepRaised()
 	-- Some weapons may have their own properties.
 	if (IsValid(weapon)) then
 		-- If their weapon is always raised, return true.
-		if (weapon.IsAlwaysRaised or ALWAYS_RAISED[weapon.GetClass(weapon)]) then
+		if (weapon.IsAlwaysRaised or Limb.ALWAYS_RAISED[weapon.GetClass(weapon)]) then
 			return true
 		-- Return false if always lowered.
 		elseif (weapon.IsAlwaysLowered or weapon.NeverRaised) then
@@ -368,9 +440,11 @@ function playerMeta:isWepRaised()
 	return self.getNetVar(self, "raised", false)
 end
 
-hook.Add("TranslateActivity", "Limb.TranslateActivity", function(client, act)
+function GAMEMODE:TranslateActivity(client, act)
+	client.CalcSeqOverride = -1
+	
 	local model = string.lower(client.GetModel(client))
-	local class = "player"
+	local class = getModelClass(model) or "player"
 	local weapon = client.GetActiveWeapon(client)
 	if (class == "player") then
 		if (IsValid(weapon) and !client.isWepRaised(client) and client.OnGround(client)) then
@@ -395,14 +469,16 @@ hook.Add("TranslateActivity", "Limb.TranslateActivity", function(client, act)
 			local tree = Limb.anim.player[holdType]
 
 			if (tree and tree[act]) then
-				if (type(tree[act]) == "string") then
+				if (isstring(tree[act])) then
 					client.CalcSeqOverride = client.LookupSequence(client, tree[act])
-					return
+					return client.CalcSeqOverride
 				else
 					return tree[act]
 				end
 			end
 		end
+		
+		return self.BaseClass.TranslateActivity(self.BaseClass, client, act)
 	end
 
 	local tree = Limb.anim[class]
@@ -419,44 +495,78 @@ hook.Add("TranslateActivity", "Limb.TranslateActivity", function(client, act)
 			end
 
 			if (tree[subClass] and tree[subClass][act]) then
-				local act2 = tree[subClass][act][client.isWepRaised(client) and 2 or 1]
+				local index = tree[subClass][act][client.isWepRaised(client) and 2 or 1]
+				local act2 = tree[subClass][act][index]
+				
+				if (isstring(act2)) then
+					client.CalcSeqOverride = client.LookupSequence(client, act2)
+					return
+				end
+				
 				return act2
 			end
 		elseif (tree.glide) then
 			return tree.glide
 		end
 	end
-end)
+end
+
+local vector_angle = FindMetaTable('Vector').Angle
+function GAMEMODE:CalcMainActivity(client, velocity)
+	client:SetPoseParameter('move_yaw', math.NormalizeAngle(vector_angle(velocity)[2] - client:EyeAngles()[2]))
+	client.CalcIdeal = ACT_MP_STAND_IDLE
+	
+	oldCalcSeqOverride = client.CalcSeqOverride
+	client.CalcSeqOverride = -1
+	
+	local base_class = self.BaseClass
+
+    if !(base_class:HandlePlayerNoClipping(client, velocity) or
+		base_class:HandlePlayerDriving(client) or
+		base_class:HandlePlayerVaulting(client, velocity) or
+		base_class:HandlePlayerJumping(client, velocity) or
+		base_class:HandlePlayerSwimming(client, velocity) or
+		base_class:HandlePlayerDucking(client, velocity)) then
+		local len2D = velocity:Length2D()
+
+		if len2D > 150 then
+			client.CalcIdeal = ACT_MP_RUN
+		elseif len2D > 0.5 then
+			client.CalcIdeal = ACT_MP_WALK
+		end
+    end
+
+	client.m_bWasOnGround = client:IsOnGround()
+	client.m_bWasNoclipping = (client:GetMoveType() == MOVETYPE_NOCLIP and !client:InVehicle())
+	client.lastVelocity = velocity
+
+	if (CLIENT) then
+		client:SetIK(false)
+	end
+
+	return client.CalcIdeal, (client.CalcSeqOverride or -1)
+end
 
 if (CLIENT) then
-	local LOWERED_ANGLES = Angle(30, -30, -25)
-	hook.Add("CalcViewModelView", "Limb.CalcViewModelView", function(weapon, viewModel, oldEyePos, oldEyeAngles, eyePos, eyeAngles)
-		if (!IsValid(weapon)) then
-			return
-		end
-
-		local vm_origin, vm_angles = eyePos, eyeAngles
+	hook.Add("CalcViewModelView", "Limb.CalcViewModelView", function(weapon, _, _, _, _, eyeAngles)
+		if (not IsValid(weapon)) then return end
 
 		--Intervention of Nutscript Holster/Raise Angle/Positions. 
-		do 
-			local player = LocalPlayer()
-			local value = 0
+		local player = LocalPlayer()
+		local value = 0
 
-			if (!player:isWepRaised() and player:GetMoveType() != MOVETYPE_OBSERVER) then
-				value = 100
-			end
-
-			local fraction = (player.nutRaisedFrac or 0) / 100
-			local rotation = weapon.LowerAngles or LOWERED_ANGLES
-			
-			vm_angles:RotateAroundAxis(vm_angles:Up(), rotation.p * fraction)
-			vm_angles:RotateAroundAxis(vm_angles:Forward(), rotation.y * fraction)
-			vm_angles:RotateAroundAxis(vm_angles:Right(), rotation.r * fraction)
-
-			player.nutRaisedFrac = Lerp(FrameTime() * 2, player.nutRaisedFrac or 0, value)
+		if (!player:isWepRaised()) then
+			value = 100
 		end
 
-		return vm_origin, vm_angles
+		local fraction = (player.RaisedFrac or 0) / 100
+		local rotation = weapon.LowerAngles or Angle(30, -30, -25)
+		
+		eyeAngles:RotateAroundAxis(eyeAngles:Up(), rotation.p * fraction)
+		eyeAngles:RotateAroundAxis(eyeAngles:Forward(), rotation.y * fraction)
+		eyeAngles:RotateAroundAxis(eyeAngles:Right(), rotation.r * fraction)
+
+		player.RaisedFrac = Lerp(FrameTime() * 2, player.RaisedFrac or 0, value)
 	end)
 else
 	if (Limb:GetCvar("hold_raised_weapon")) then
@@ -508,6 +618,10 @@ else
 		local weapon = self:GetActiveWeapon()
 
 		if (IsValid(weapon)) then
+			if (weapon.IsAlwaysRaised or Limb.ALWAYS_RAISED[weapon.GetClass(weapon)]) then
+				return
+			end
+			
 			weapon:SetNextPrimaryFire(CurTime() + 1)
 			weapon:SetNextSecondaryFire(CurTime() + 1)
 		end
