@@ -6,7 +6,7 @@ Limb.config = Limb.config or {}
 Limb.hitgroup = Limb.hitgroup or {}
 Limb.gamemode = "sandbox"
 
-function util.Include(name)
+function Limb.Include(name)
 	local server = (string.find(name, "sv_") or string.find(name, "init.lua"))
 	local client = (string.find(name, "cl_") or string.find(name, "cl_init.lua"))
 	local shared = (string.find(name, "sh_") or string.find(name, "shared.lua"))
@@ -54,8 +54,8 @@ function Limb:IsNutscript()
 	return false
 end
 
-util.Include("config/sh_hitgroup.lua")
-util.Include("config/sh_cvars.lua")
+Limb.Include("config/sh_hitgroup.lua")
+Limb.Include("config/sh_cvars.lua")
 
 local function g(a)
 	return GAMEMODE.DerivedFrom == a or GAMEMODE_NAME == a or gmod.GetGamemode().Name == a
@@ -70,10 +70,10 @@ hook.Add("Initialize", "Limb.Initialize", function()
 		Limb.gamemode = "darkrp"
 	end
 
-	util.Include("server/sv_limb.lua")
-	util.Include("server/sv_limbhooks.lua")
-	util.Include("client/cl_limb.lua")
+	Limb.Include("server/sv_limb.lua")
+	Limb.Include("server/sv_limbhooks.lua")
+	Limb.Include("client/cl_limb.lua")
 
 	MsgC(Color(0, 255, 100, 255), "[LIMB] Initializing...\n")
-	util.Include("plugins/sh_autoload.lua")
+	Limb.Include("plugins/sh_autoload.lua")
 end)

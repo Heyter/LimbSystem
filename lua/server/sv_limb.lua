@@ -23,7 +23,7 @@ function Limb:TakeDamage(player, hitGroup, dmgInfo)
 			end
 		end
 		
-		self:AddHealth(player, hitGroup, damage)
+		self:SetHealth(player, hitGroup, damage)
 		local newVal = self:GetHealth(player, hitGroup)
 		
 		if (dmgType) then
@@ -87,30 +87,6 @@ function Limb:SetBleedingData(player, hitGroup, amount, bIsTick)
 		
 		player:setNetVar("LimbData", data)
 	end
-end
-
-if (Limb:GetCvar("debug")) then
-	concommand.Add("reset_limb", function(player)
-		Limb:ResetLimbData(player)
-	end)
-
-	concommand.Add("set_limb", function(player, cmb, args)
-		local amount = args[1]
-		amount = math.Clamp(tonumber(amount) or 1, 0, 100)
-		
-		for i = 1, #Limb:GetDataHigtroup() do
-			Limb:AddHealth(player, i, amount)
-			Limb:SetBleeding(player, i, true)
-			Limb:SetBroken(player, i, true)
-		end
-	end)
-
-	concommand.Add("sv_limbdata", function(player)
-		print("self:GetDataHigtroup()")
-		PrintTable(Limb:GetDataHigtroup())
-		print("PlayerData")
-		PrintTable(player:getNetVar("LimbData", {}))
-	end)
 end
 
 -- A function to get a player's limb health.
@@ -259,16 +235,13 @@ function Limb:DisabilitySpeed(player)
 end
 
 -- # A function to add/take a player's health limb.
--- # Ex: AddHealth(player, HITGROUP_HEAD, 10) -- Add
--- # Ex: AddHealth(player, HITGROUP_HEAD, -10) -- Take
-function Limb:AddHealth(player, hitGroup, damage)
+-- # Ex: SetHealth(player, HITGROUP_HEAD, 10) -- Take
+-- # Ex: SetHealth(player, HITGROUP_HEAD, -10) -- Add
+function Limb:SetHealth(player, hitGroup, damage)
 	local limbData = player:getNetVar("LimbData", {})
-	if (type(limbData) == "table") then
-		if (limbData and limbData[hitGroup]) then
-			local maxHealth = Limb:GetDataHigtroup()[hitGroup][1]
-			limbData[hitGroup].health = math.Clamp((limbData[hitGroup].health or 0) + math.ceil(damage), 0, maxHealth)
-			player:setNetVar("LimbData", limbData)
-		end
+	if (istable(limbData) and limbData and limbData[hitGroup]) then
+		limbData[hitGroup].health = math.Clamp((limbData[hitGroup].health or 0) + math.ceil(damage), 0, Limb:GetDataHigtroup()[hitGroup][1])
+		player:setNetVar("LimbData", limbData)
 	end
 end
 
@@ -278,7 +251,7 @@ function Limb:HealBody(player, amount)
 	
 	if (limbData) then
 		for i = 1, #self:GetDataHigtroup() do
-			self:AddHealth(player, i, -amount)
+			self:SetHealth(player, i, -amount)
 		end
 	end
 end
@@ -306,20 +279,16 @@ function Limb:TickBleeding()
 					counts = counts + 1
 					self:SetBleedingData(player, i2, limbData.BleedingTick or time, true)
 					
-					--if (limbData.BleedingTick <= time) then
 					local d = (1 - math.Clamp(CurTime() - limbData.BleedingTick, 0, 1))
 					if (d <= 0) then
 						self:SetBleedingData(player, i2, CurTime() + math.random() * self:GetCvar("BleedIntervalLimb"), true)
 						self:SetBleedingData(player, i2, (limbData.BleedingDmg or 0) + math.random() * self:GetCvar("BleedLimbDamage"))
-						self:AddHealth(player, i2, limbData.BleedingDmg) -- # Limb
+						self:SetHealth(player, i2, limbData.BleedingDmg) -- # Limb
 						
 						hook.Run("DamageLimbBleedTick", player, i2, counts) -- # Called when limb get bleed
 					end
 					d = nil
 				end
-					--self:SetBleedingData(player, i2, CurTime(), true)
-					--self:SetBleedingData(player, i2, 0)
-				--end
 				limbData = nil
 			end
 
@@ -335,7 +304,13 @@ function Limb:TickBleeding()
 				
 				local damage = self:GetCvar("BleedDamage") * counts
 				player:ViewPunch(Angle(-1 * damage, 0, 0))
-				player:SetHealth(math.Max(player:Health() - damage, 0))
+				
+				local new_hp = player:Health() - damage
+				if new_hp <= 0 then
+					player:Kill()
+				else
+					player:SetHealth(math.Max(new_hp, 0))
+				end
 				
 				player.lastBleedingTick = CurTime() + self:GetCvar("BleedInterval") - counts
 			end
@@ -348,14 +323,13 @@ end
 
 function Limb:TickLimbBroken()
 	local curTime = CurTime()
-	local players = player.GetHumans()
-	
-	for k = 1, #players do
-		local player = players[k]
+
+	for k = 1, player.GetCount() do
+		local player = player.GetHumans()[k]
 		local isValid = IsValid(player) and player:Alive()
 		
 		if (self:IsNutscript()) then
-			isValid = IsValid(player) and player:Alive() and player:getChar()
+			isValid = isValid and player:getChar()
 		end
 		
 		if (isValid) then
@@ -376,7 +350,6 @@ function Limb:TickLimbBroken()
 		end
 		player, isValid = nil, nil
 	end
-	players = nil
 end
 
 function Limb:PlayerPlayPainSound(gender, hitGroup)

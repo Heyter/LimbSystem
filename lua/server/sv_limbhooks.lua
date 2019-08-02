@@ -63,11 +63,6 @@ hook.Add("EntityTakeDamage", "Limb.EntityTakeDamage", function(entity, dmgInfo)
 		local player = entity
 		local lastHitGroup = entity:LastHitGroup()
 		
-		if (Limb:GetCvar("debug")) then
-			player:ChatPrint("DMGTYPE: "..dmgInfo:GetDamageType())
-			player:ChatPrint("HITGROUP: "..lastHitGroup)
-		end
-		
 		if (dmgInfo:GetDamage() > 0) then
 			if (player:LimbRestricted()) then
 				return
@@ -133,10 +128,6 @@ hook.Add("EntityTakeDamage", "Limb.EntityTakeDamage", function(entity, dmgInfo)
 end)
 
 hook.Add("LimbTakeDamage", "Limb.LimbTakeDamage", function(player, hitGroup, damage, newHealth, dmgInfo)
-	if (Limb:GetCvar("debug")) then
-		player:ChatPrint("Health: "..Limb:GetHealth(player, hitGroup).."\nName: "..Limb:GetName(hitGroup).."\n")
-	end
-	
 	if (Limb:GetCvar("broken_arms_drop")) then
 		if (dmgInfo:IsBulletDamage() and math.random() >= 0.7 and (Limb:IsBroken(player, HITGROUP_LEFTARM) or Limb:IsBroken(player, HITGROUP_RIGHTARM))) then
 			if ((player.dropWepTime or 0) < CurTime()) then
@@ -235,8 +226,7 @@ if (Limb:GetCvar("fire_spread")) then
 end
 
 hook.Add("DamageLimbBleedTick", "Limb.DamageLimbBleedTick", function(player, hitgroup, counts)
-	local time = CurTime()
-	if (IsValid(player) and player:Alive() and (player.lastLimbTickBleed or 0) <= time) then
+	if (IsValid(player) and player:Alive() and (player.lastLimbTickBleed or 0) <= CurTime()) then
 		if (Limb:GetCvar("blood_effect")) then
 			Limb:CreateBloodEffects(player:GetPos(), counts, player)
 		end

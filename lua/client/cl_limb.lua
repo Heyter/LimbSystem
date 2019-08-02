@@ -13,25 +13,6 @@ local Limb, CurTime, IsValid, math, MOVETYPE_NOCLIP, MOVETYPE_LADDER, hook = Lim
 local LocalPlayer, vgui, surface, pairs, RunConsoleCommand, draw = LocalPlayer, vgui, surface, pairs, RunConsoleCommand, draw
 local TEXT_ALIGN_CENTER = TEXT_ALIGN_CENTER
 
-if (Limb:GetCvar("debug")) then
-	concommand.Add("limb_info", function()
-		for i = 1, #Limb:GetDataHigtroup() do
-			--local health = Limb:GetHealth(i)
-			--local color = Limb:GetColor(health)
-			local health = Limb:GetHealthPercentage(i, true)
-			local color = Limb:GetColor(math.floor(health))
-			MsgC(color, "Name: "..Limb:GetName(i).."\n")
-			MsgC(color, "Health: "..health.."\n")
-			MsgC(color, "isBroken: "..tostring(Limb:IsBroken(i)).."\n")
-			MsgC(color, "isBleeding: "..tostring(Limb:IsBleeding(i)).."\n")
-			
-			health,color = nil,nil
-		end
-		
-		PrintTable(LocalPlayer():getNetVar("LimbData", {}))
-	end)
-end
-
 local playerMeta = FindMetaTable("Player")
 
 -- # A function to get limb a player data.
