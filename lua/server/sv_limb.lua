@@ -293,7 +293,6 @@ function Limb:TickBleeding()
 			end
 
 			if ((player.lastBleedingTick or 0) < time and counts > 0) then
-				player:ChatPrint("You got bleed!")
 				if (self:GetCvar("blood_effect")) then
 					self:CreateBloodEffects(player:GetPos(), counts, player)
 				end

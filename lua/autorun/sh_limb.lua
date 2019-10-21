@@ -32,7 +32,20 @@ function Limb:AddHitGroup(hitgroup, data)
 end
 
 function Limb:AddCvar(name, data)
-	self.config[name] = data
+	local contents = file.Read('limbsystem/cvars.txt', "DATA")
+	
+	if (contents and contents != "") then
+		local status, decoded = pcall(pon.decode, contents)
+		
+		if (status and decoded) then
+			local value = decoded[1][name]
+			self.config[name] = value and value or data
+		else
+			self.config[name] = data
+		end
+	else
+		self.config[name] = data
+	end
 end
 
 function Limb:GetCvar(name)
