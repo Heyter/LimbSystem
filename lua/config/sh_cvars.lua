@@ -20,8 +20,8 @@ Limb:AddCvar("limp_broken", true) -- # Limp when player broken leg
 
 Limb:AddCvar("prone", true) -- # Need addon "Prone". (When player broken legs)
 
-Limb:AddCvar("raised_weapon_system", true) -- # Enable system raised weapon. (nutscript use own raised system, but work with limb)
-Limb:AddCvar("hold_raised_weapon", true) -- # Hold R to raise weapon (false = disabled) (Don't worked for nutscript)
+Limb:AddCvar("raised_weapon_system", false) -- # Enable system raised weapon. (nutscript use own raised system, but work with limb)
+Limb:AddCvar("hold_raised_weapon", false) -- # Hold R to raise weapon (false = disabled) (Don't worked for nutscript)
 Limb:AddCvar("raised_weapon", false) -- # Always raise weapon? (true = always) (Don't worked for nutscript)
 Limb.ALWAYS_RAISED = {} -- Or add in SWEP = SWEP.IsAlwaysRaised = true (Don't worked for nutscript)
 Limb.ALWAYS_RAISED["weapon_physgun"] = true
