@@ -3,10 +3,6 @@ netstream.Hook('LCM_DataChanged', function(player, data)
 	
 	file.CreateDir("limbsystem/")
 	
-	for cvar, value in pairs(data) do
-		Limb:AddCvar(cvar, value)
-	end
-	
 	local contents = file.Read('limbsystem/cvars.txt', "DATA")
 	if (contents and contents != "") then
 		local status, decoded = pcall(pon.decode, contents)
@@ -29,7 +25,11 @@ netstream.Hook('LCM_DataChanged', function(player, data)
 	
 	file.Write('limbsystem/cvars.txt', pon.encode({data}))
 	
-	netstream.Start(player, "LCM_DataChanged", data)
+	for cvar, value in pairs(data) do
+		Limb:AddCvar(cvar, value)
+	end
 	
-	player:ChatPrint("Settings saved. Reboot the server.")
+	netstream.Start(nil, "LCM_DataChanged", data)
+	
+	player:ChatPrint("Settings saved. (Optional) Reboot the server.")
 end)

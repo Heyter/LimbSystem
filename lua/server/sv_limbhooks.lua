@@ -182,7 +182,7 @@ if (Limb:GetCvar("prone") and prone) then
 end
 
 hook.Add("Tick", "Limb.PlayerTick", function()
-	if (Limb:GetCvar("Bleeding")) then
+	if (Limb:GetCvar("bleeding")) then
 		Limb:TickBleeding()
 	end
 

@@ -3,6 +3,11 @@
 
 Limb = Limb or {}
 Limb.config = Limb.config or {}
+
+if CLIENT then
+	Limb.desc_config = {}
+end
+
 Limb.hitgroup = Limb.hitgroup or {}
 Limb.gamemode = "sandbox"
 
@@ -31,7 +36,7 @@ function Limb:AddHitGroup(hitgroup, data)
 	self:GetDataHigtroup()[hitgroup] = data
 end
 
-function Limb:AddCvar(name, data)
+function Limb:AddCvar(name, data, desc)
 	local contents = file.Read('limbsystem/cvars.txt', "DATA")
 	
 	if (contents and contents != "") then
@@ -45,6 +50,12 @@ function Limb:AddCvar(name, data)
 		end
 	else
 		self.config[name] = data
+	end
+	
+	if CLIENT then
+		if not self.desc_config[name] and desc then
+			self.desc_config[name] = desc
+		end
 	end
 end
 

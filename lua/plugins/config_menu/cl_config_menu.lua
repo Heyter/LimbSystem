@@ -1,8 +1,27 @@
 local type_to_convar = {
-	['boolean'] = 'Boolean',
-	['number'] = 'Int',
+	['number'] = 'Integer',
 	['string'] = 'Generic',
+	['boolean'] = 'Boolean'
 }
+
+local function table_to_str(data)
+	if not istable(data) then return data end
+	
+	local str = ""
+	local i = 0
+	local last_iter = table.Count(data)
+	
+	for k, v in pairs(data) do
+		str = str .. "" .. k .. ""
+		i = i + 1
+		
+		if last_iter ~= i then
+			str = str .. ", "
+		end
+	end
+	
+	return str
+end
 
 local PANEL = {}
 
@@ -19,24 +38,40 @@ function PANEL:Init()
 	self.props:Dock(FILL)
 	
 	for cvar, value in pairs(Limb.config) do -- Cvars
-		local TYPE = type_to_convar[type(value)]
+		local TYPE = type(value)
+		local LONG_TYPE = type_to_convar[TYPE] or TYPE
 		
-		self.PanelRows[cvar] = self.props:CreateRow(TYPE, cvar)
+		self.PanelRows[cvar] = self.props:CreateRow(LONG_TYPE, cvar)
 		
-		if TYPE == 'Int' then
-			self.PanelRows[cvar]:Setup(TYPE, {max = 999, min = 0})
+		if TYPE == 'number' then
+			self.PanelRows[cvar]:Setup(LONG_TYPE, {max = 999, min = 0})
+		elseif TYPE == 'table' then
+			self.PanelRows[cvar]:Setup(LONG_TYPE)
 		else
-			self.PanelRows[cvar]:Setup(TYPE)
+			self.PanelRows[cvar]:Setup(LONG_TYPE)
 		end
 		
-		self.PanelRows[cvar]:SetValue(value)
+		if TYPE == 'table' then
+			local convert = table_to_str(value)
+			self.PanelRows[cvar]:SetValue(convert)
+			self.CvarsSave[cvar] = convert
+			convert = nil
+		else
+			self.PanelRows[cvar]:SetValue(value)
+			self.CvarsSave[cvar] = value
+		end
 		
 		self.PanelRows[cvar].DataChanged = function(row, value)
-			if TYPE == 'Boolean' then
+			if TYPE == 'boolean' then
 				self.CvarsSave[cvar] = tobool(value)
 			else
 				self.CvarsSave[cvar] = value
 			end
+		end
+		
+		local desc = Limb.desc_config[cvar]
+		if desc then
+			self.PanelRows[cvar]:SetTooltip(desc)
 		end
 	end
 	
@@ -45,6 +80,18 @@ function PANEL:Init()
 	self.submit:Dock(BOTTOM)
 	self.submit.DoClick = function()
 		if table.Count(self.CvarsSave) > 0 then
+			for cvar, value in pairs(self.CvarsSave) do
+				if cvar == 'dmg_break_bones' or cvar == 'dmg_starts_bleeding' or cvar == 'always_can_shoot' then
+					local new = {}
+					local split = string.Explode(', ', value)
+					for k, v in ipairs(split) do
+						new[v] = true
+					end
+					self.CvarsSave[cvar] = new
+					split, new = nil, nil
+				end
+			end
+		
 			netstream.Start("LCM_DataChanged", self.CvarsSave)
 		end
 	end

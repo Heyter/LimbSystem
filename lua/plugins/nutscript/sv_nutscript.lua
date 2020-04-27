@@ -50,25 +50,7 @@ function Limb:nutDropWeapon(player)
 	end
 end
 
-if (Limb:GetCvar("raised_weapon_system")) then
-	-- # Called when player broken arms.
-	hook.Add("TickLimbArmsBroken", "Limb.TickLimbArmsBroken", function(player, broken)
-		if (broken) then
-			player:setWepRaised(false)
-		end
-	end)
-	
-	-- # Called when player broken arms and wants raise weapon.
-	hook.Add("CanToggleWepRaise", "Limb.CanToggleWepRaise", function(player)
-		if (Limb:IsBroken(player, HITGROUP_LEFTARM) and Limb:IsBroken(player, HITGROUP_RIGHTARM)) then
-			return true
-		else
-			return false
-		end
-	end)
-end
-
-if (Limb:GetCvar("save_limbdata")) then
+if (Limb:GetCvar("nutscript_save_limbdata")) then
 	hook.Add("CharacterPreSave", "Limb.CharacterPreSave", function(char)
 		local data = char.player:LimbData()
 		
@@ -93,7 +75,7 @@ local function brokenProne(player)
 end
 	
 hook.Add("PlayerLoadedChar", "Limb.PlayerLoadedChar", function(player, char)
-	if (Limb:GetCvar("save_limbdata")) then
+	if (Limb:GetCvar("nutscript_save_limbdata")) then
 		local data = char:getData("LimbData")
 		if (data) then
 			for k = 1, #data do
@@ -114,7 +96,7 @@ hook.Add("PlayerSpawn", "Limb.PlayerSpawn", function(player)
 	if (IsValid(player) and player:IsPlayer()) then
 		player:LimbNilSpeed()
 		
-		if (Limb:GetCvar("save_limbdata")) then
+		if (Limb:GetCvar("nutscript_save_limbdata")) then
 			if (player.resetLimbData) then
 				Limb:ResetLimbData(player)
 				brokenProne(player)

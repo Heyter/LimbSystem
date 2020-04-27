@@ -1,6 +1,4 @@
-if (Limb:GetCvar("raised_weapon_system") and !Limb:IsNutscript()) then
-	Limb.Include("plugins/raised/sh_raised.lua")
-end
+Limb.Include("plugins/raised/sh_raised.lua")
 
 if (Limb:IsNutscript()) then
 	MsgC(color_white, "[LIMB] Nutscript supported\n")

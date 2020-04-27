@@ -28,7 +28,7 @@ function Limb:TakeDamage(player, hitGroup, dmgInfo)
 		
 		if (dmgType) then
 			local maxHealth = self:GetDataHigtroup()[hitGroup][1]
-			if (self.tbl_DmgStartsBleeding[dmgType]) then
+			if self:GetCvar("dmg_starts_bleeding")[dmgType] then
 				local bleed = self:Data()[hitGroup][4] -- # Bleeding threshold
 				if (bleed > 0 and damage >= bleed or newVal >= maxHealth) then -- # bleeding
 					self:SetBleeding(player, hitGroup, true)
@@ -36,7 +36,7 @@ function Limb:TakeDamage(player, hitGroup, dmgInfo)
 				bleed = nil
 			end
 			
-			if (self.tbl_DmgBreakBones[dmgType]) then
+			if self:GetCvar("dmg_break_bones")[dmgType] then
 				local broken = self:Data()[hitGroup][3] -- # Bone break threshold
 				if (broken > 0 and damage >= broken or newVal >= maxHealth) then -- # break bones
 					self:SetBroken(player, hitGroup, true)
@@ -281,8 +281,8 @@ function Limb:TickBleeding()
 					
 					local d = (1 - math.Clamp(CurTime() - limbData.BleedingTick, 0, 1))
 					if (d <= 0) then
-						self:SetBleedingData(player, i2, CurTime() + math.random() * self:GetCvar("BleedIntervalLimb"), true)
-						self:SetBleedingData(player, i2, (limbData.BleedingDmg or 0) + math.random() * self:GetCvar("BleedLimbDamage"))
+						self:SetBleedingData(player, i2, CurTime() + math.random() * self:GetCvar("bleed_interval_limb"), true)
+						self:SetBleedingData(player, i2, (limbData.BleedingDmg or 0) + math.random() * self:GetCvar("bleed_limb_damage"))
 						self:SetHealth(player, i2, limbData.BleedingDmg) -- # Limb
 						
 						hook.Run("DamageLimbBleedTick", player, i2, counts) -- # Called when limb get bleed
@@ -301,7 +301,7 @@ function Limb:TickBleeding()
 					self:PlayerEmitSound(player, math.random(counts))
 				end
 				
-				local damage = self:GetCvar("BleedDamage") * counts
+				local damage = self:GetCvar("bleed_damage") * counts
 				player:ViewPunch(Angle(-1 * damage, 0, 0))
 				
 				local new_hp = player:Health() - damage
@@ -311,7 +311,7 @@ function Limb:TickBleeding()
 					player:SetHealth(math.Max(new_hp, 0))
 				end
 				
-				player.lastBleedingTick = CurTime() + self:GetCvar("BleedInterval") - counts
+				player.lastBleedingTick = CurTime() + self:GetCvar("bleed_interval") - counts
 			end
 			data, counts = nil, nil
 		end
